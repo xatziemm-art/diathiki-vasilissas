@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<title>Η Διαθήκη της Βασίλισσας</title>
+
+<style>
+body {
+  margin: 0;
+  background: #111;
+  color: #f5e6c8;
+  font-family: Georgia, serif;
+  text-align: center;
+}
+section { display: none; padding: 20px; }
+
+button {
+  padding: 15px 30px;
+  font-size: 18px;
+  background: #8b5a2b;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+input {
+  padding: 10px;
+  font-size: 18px;
+  text-align: center;
+}
+
+iframe {
+  width: 90%;
+  max-width: 800px;
+  height: 450px;
+  border: 3px solid #8b5a2b;
+  border-radius: 12px;
+}
+
+#map {
+  display: grid;
+  grid-template-columns: repeat(3,1fr);
+  max-width: 600px;
+  margin: 20px auto;
+  gap: 4px;
+}
+.map-piece {
+  aspect-ratio: 4/3;
+  background-image: url("map.jpg");
+  background-size: 300% 200%;
+  opacity: 0;
+  transition: opacity .5s;
+}
+.map-piece.show { opacity: 1; }
+
+#codeImg {
+  width:90%;
+  max-width:500px;
+  margin:20px auto;
+  box-shadow: 0 0 20px gold;
+}
+</style>
+</head>
+
+<body>
+
+<!-- START -->
+<section id="start" style="display:block">
+  <h1>🔐 ΚΩΔΙΚΟΣ ΕΚΚΙΝΗΣΗΣ</h1>
+  <input id="startCode" placeholder="Κωδικός">
+  <br><br>
+  <button onclick="unlock()">ΕΝΑΡΞΗ</button>
+</section>
+
+<!-- INTRO -->
+<section id="intro">
+  <h1>🏴‍☠️ Η Αποστολή Ξεκινά</h1>
+  <button onclick="playIntro()">▶ ΠΡΟΒΟΛΗ INTRO</button><br><br>
+
+  <iframe id="introVideo" style="display:none"
+    src="https://drive.google.com/file/d/1tuB66VN6bAu_YiDDww13sJq7d-FI1iMJ/preview"
+    allow="autoplay"></iframe><br><br>
+
+  <button onclick="startGame()">ΣΥΝΕΧΕΙΑ</button>
+</section>
+
+<!-- GAME -->
+<section id="game">
+  <h1>👑 Η ΔΙΑΘΗΚΗ ΤΗΣ ΒΑΣΙΛΙΣΣΑΣ</h1>
+
+  <div id="map">
+    <div class="map-piece" style="background-position:0% 0%"></div>
+    <div class="map-piece" style="background-position:50% 0%"></div>
+    <div class="map-piece" style="background-position:100% 0%"></div>
+    <div class="map-piece" style="background-position:0% 100%"></div>
+    <div class="map-piece" style="background-position:50% 100%"></div>
+    <div class="map-piece" style="background-position:100% 100%"></div>
+  </div>
+
+  <iframe id="gameVideo" allow="autoplay"></iframe>
+
+  <br><br>
+  <input id="answer" placeholder="Απάντηση">
+  <br><br>
+  <button onclick="checkAnswer()">ΥΠΟΒΟΛΗ</button>
+</section>
+
+<!-- END -->
+<section id="end">
+  <h1>🔐 Ο ΚΩΔΙΚΟΣ ΓΙΑ ΤΟ ΘΗΣΑΥΡΟ</h1>
+
+  <img id="codeImg" src="kodikos.jpg">
+
+  <br>
+  <input id="finalCode" placeholder="Κωδικός">
+  <br><br>
+  <button onclick="checkFinal()">ΕΠΙΒΕΒΑΙΩΣΗ</button>
+
+  <p id="success" style="display:none;font-size:22px;color:gold;">
+    🎉 ΤΑ ΚΑΤΑΦΕΡΕΣ!<br>
+    ΞΕΚΛΕΙΔΩΣΕΣ ΤΗ ΔΙΑΘΗΚΗ ΤΗΣ ΒΑΣΙΛΙΣΣΑΣ!
+  </p>
+
+  <iframe id="finalVideo" style="display:none"
+    src="https://drive.google.com/file/d/1IShsadHcwQvO18Pl3_qntH-ZoAesF9OX/preview"
+    allow="autoplay"></iframe>
+</section>
+
+<script>
+const START_CODE = "TREASURE2026";
+
+const answers = [
+ "ΟΘΩΝΙΚΗ ΑΥΛΗ",
+ "ΑΛΣΟΣ ΕΥΚΑΛΥΠΤΩΝ",
+ "ΝΑΟΣ ΑΠΟΣΤΟΛΟΥ ΠΑΥΛΟΥ",
+ "ΣΙΔΕΡΕΝΙΟ ΔΕΝΤΡΟ",
+ "ΘΕΑΤΡΟ ΜΙΜΗΣ ΠΛΕΣΣΑΣ",
+ "ΚΙΒΩΤΟΣ ΤΩΝ ΣΠΟΡΩΝ"
+];
+
+const videos = [
+ "https://drive.google.com/file/d/1tuB66VN6bAu_YiDDww13sJq7d-FI1iMJ/preview",
+ "https://drive.google.com/file/d/182GC4eRFw-9jzx2J_jEe5fb4gR-gk2Ss/preview",
+ "https://drive.google.com/file/d/1KaTQ0yhztA4u4EbRlX8t_XkMOvXF96TP/preview",
+ "https://drive.google.com/file/d/1VotE2oNqVvt4yZ3Zt9z9kVXw9G6LRv_5/preview",
+ "https://drive.google.com/file/d/1QP4464Wxty33Mz8EbnbBBvyizXHbJdyo/preview",
+ "https://drive.google.com/file/d/1MXRu4e_8JuA9SHYcncvlfHuQuoORBNri/preview"
+];
+
+let step = 0;
+
+function unlock(){
+  if(startCode.value.toUpperCase() === START_CODE){
+    start.style.display="none";
+    intro.style.display="block";
+  } else alert("Λάθος κωδικός");
+}
+
+function playIntro(){
+  introVideo.style.display="block";
+}
+
+function startGame(){
+  intro.style.display="none";
+  game.style.display="block";
+  loadStep();
+}
+
+function loadStep(){
+  gameVideo.src = videos[step];
+}
+
+function checkAnswer(){
+  if(answer.value.toUpperCase() === answers[step]){
+    document.querySelectorAll(".map-piece")[step].classList.add("show");
+    answer.value="";
+    step++;
+    if(step < 6) loadStep();
+    else {
+      game.style.display="none";
+      end.style.display="block";
+    }
+  } else alert("Λάθος απάντηση");
+}
+
+function checkFinal(){
+  if(finalCode.value === "161311316"){
+    success.style.display="block";
+    setTimeout(()=>{
+      finalVideo.style.display="block";
+    },3000);
+  } else alert("Λάθος κωδικός");
+}
+</script>
+
+</body>
+</html>
