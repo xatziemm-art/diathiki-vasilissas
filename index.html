@@ -5,6 +5,7 @@
 <title>Η Διαθήκη της Βασίλισσας</title>
 
 <style>
+
 body {
   margin: 0;
   background: #111;
@@ -59,6 +60,53 @@ iframe {
   max-width:500px;
   margin:20px auto;
   box-shadow: 0 0 20px gold;
+}
+/* Cinematic transitions */
+iframe {
+  opacity: 0;
+  transform: scale(0.95);
+  transition: opacity 1.2s ease, transform 1.2s ease;
+}
+
+iframe.show {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Magical map reveal */
+.map-piece.show {
+  opacity: 1;
+  box-shadow: 0 0 25px gold;
+  animation: glow 1.5s ease;
+}
+
+@keyframes glow {
+  0% { box-shadow: 0 0 0 gold; }
+  50% { box-shadow: 0 0 40px gold; }
+  100% { box-shadow: 0 0 25px gold; }
+}
+
+/* Fullscreen intro video */
+#autoIntro {
+  position: fixed;
+  inset: 0;
+  background: black;
+  z-index: 9999;
+  display: none;
+}
+#autoIntro video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+#failScreen {
+  display:flex;
+  animation: fadeIn 2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity:0; }
+  to { opacity:1; }
 }
 </style>
 </head>
@@ -149,26 +197,59 @@ const videos = [
 ];
 
 let step = 0;
+let timeLeft = 1800; // 30 λεπτά
+let timerInterval;
 
 function unlock(){
   if(startCode.value.toUpperCase() === START_CODE){
     start.style.display="none";
-    intro.style.display="block";
+
+    autoIntro.style.display="block";
+    introMp4.play();
+
+    introMp4.onended = () => {
+      autoIntro.style.display="none";
+      intro.style.display="block";
+    };
+
   } else alert("Λάθος κωδικός");
 }
 
 function playIntro(){
   introVideo.style.display="block";
+  setTimeout(()=>introVideo.classList.add("show"),100);
 }
 
 function startGame(){
   intro.style.display="none";
   game.style.display="block";
+
+  // ESCAPE MODE START
+  timer.style.display="block";
+  tension.volume = 0.3;
+  tension.play();
+
+  timerInterval = setInterval(()=>{
+    timeLeft--;
+    let min = Math.floor(timeLeft/60);
+    let sec = timeLeft%60;
+    timer.innerText = `⏳ ${min}:${sec.toString().padStart(2,"0")}`;
+
+    if(timeLeft <= 0){
+      clearInterval(timerInterval);
+      tension.pause();
+      game.style.display="none";
+      failScreen.style.display="flex";
+    }
+  },1000);
+
   loadStep();
 }
 
 function loadStep(){
+  gameVideo.classList.remove("show");
   gameVideo.src = videos[step];
+  setTimeout(()=>gameVideo.classList.add("show"),200);
 }
 
 function checkAnswer(){
@@ -185,14 +266,83 @@ function checkAnswer(){
 }
 
 function checkFinal(){
+
+  // STOP ESCAPE MODE
+  clearInterval(timerInterval);
+  tension.pause();
+
   if(finalCode.value === "161311316"){
     success.style.display="block";
+
+    // μουσική επιβράβευσης
+    rewardMusic.volume = 0.6;
+    rewardMusic.play();
+
+    // καμπάνες καθεδρικού
     setTimeout(()=>{
-      finalVideo.style.display="block";
-    },3000);
+      bells.volume = 0.8;
+      bells.play();
+    },500);
+
+    // cinematic τελικό video
+    setTimeout(()=>{
+      finalCinematic.style.display="block";
+      video7.play();
+    },2500);
+
   } else alert("Λάθος κωδικός");
 }
+
 </script>
+<!-- AUTO INTRO -->
+<div id="autoIntro">
+  <video id="introMp4" src="intro.mp4" autoplay muted playsinline></video>
+</div>
+<audio id="bells" src="bells.mp3" preload="auto"></audio>
+<!-- FINAL CINEMATIC -->
+<div id="finalCinematic" style="
+  position:fixed;
+  inset:0;
+  background:black;
+  z-index:9999;
+  display:none;">
+  <video id="video7" src="video7.mp4" autoplay playsinline
+    style="width:100%;height:100%;object-fit:cover">
+  </video>
+</div>
+
+<!-- REWARD MUSIC -->
+<audio id="rewardMusic" src="medieval.mp3" preload="auto"></audio>
+<!-- ESCAPE TIMER -->
+<div id="timer" style="
+  position:fixed;
+  top:10px;
+  right:20px;
+  font-size:22px;
+  color:gold;
+  font-family:Georgia;
+  display:none;
+  z-index:5000;">
+⏳ 30:00
+</div>
+
+<!-- FAILURE SCREEN -->
+<div id="failScreen" style="
+  position:fixed;
+  inset:0;
+  background:black;
+  color:darkred;
+  display:none;
+  z-index:10000;
+  align-items:center;
+  justify-content:center;
+  flex-direction:column;
+  font-size:28px;">
+  ☠️ Η ΚΑΤΑΡΑ ΣΕ ΠΡΟΛΑΒΕ ☠️<br><br>
+  Η Διαθήκη χάθηκε για πάντα…
+</div>
+
+<audio id="tension" src="tension.mp3" loop preload="auto"></audio>
 
 </body>
 </html>
